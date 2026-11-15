@@ -101,3 +101,5 @@ dist/
 *.backup_*
 
 *.step*_backup
+.env
+backend/.env

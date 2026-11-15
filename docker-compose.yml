@@ -21,6 +21,7 @@ services:
     ports:
       - "127.0.0.1:8001:8000"
     environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
       DATABASE_URL: postgresql+psycopg://campusbite:${POSTGRES_PASSWORD}@db:5432/campusbite
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY}
       RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}

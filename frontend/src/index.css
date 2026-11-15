@@ -109,3 +109,10 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+/* CampusBite owner dashboard readability */
+.owner-dashboard h1,
+.owner-dashboard h2,
+.owner-dashboard h3 {
+  color: #222 !important;
+}

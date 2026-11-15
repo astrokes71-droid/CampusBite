@@ -1,3 +1,4 @@
+import { useLocation, Navigate } from "react-router-dom";
 import AIInsights from "./AIInsights";
 import OwnerDashboard from "./OwnerDashboard";
 import DeliveryDashboard from "./DeliveryDashboard";
@@ -10,27 +11,32 @@ import "./App.css";
 const API_URL = "http://127.0.0.1:8000";
 
 function App() {
+  const location = useLocation();
+  const [foodSearch, setFoodSearch] = useState("");
+  const [maxFoodPrice, setMaxFoodPrice] = useState("");
+  const [foodPage, setFoodPage] = useState(1);
+
   const [authToken, setAuthToken] = useState(
-    () => sessionStorage.getItem("campusbite_token")
+    () => localStorage.getItem("campusbite_token")
   );
   const [userRole, setUserRole] = useState(
-    () => sessionStorage.getItem("campusbite_role") || "customer"
+    () => localStorage.getItem("campusbite_role") || "customer"
   );
   const [showOrders, setShowOrders] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
 
   const handleLogin = (token, role = 'customer') => {
     setUserRole(role);
-    sessionStorage.setItem('campusbite_role', role);
+    localStorage.setItem('campusbite_role', role);
     setAuthToken(token);
-    sessionStorage.setItem("campusbite_token", token);
+    localStorage.setItem("campusbite_token", token);
     setShowAuth(false);
   };
 
   const handleLogout = () => {
     setAuthToken(null);
-    sessionStorage.removeItem("campusbite_token");
-    sessionStorage.removeItem("campusbite_role");
+    localStorage.removeItem("campusbite_token");
+    localStorage.removeItem("campusbite_role");
     setUserRole("customer");
     setShowAuth(false);
   };
@@ -75,12 +81,44 @@ function App() {
     0
   );
 
+
+  const filteredMenu = menu.filter((item) => {
+    const matchesName = item.name.toLowerCase()
+      .includes(foodSearch.trim().toLowerCase());
+
+    const matchesPrice = maxFoodPrice === "" ||
+      Number(item.price) <= Number(maxFoodPrice);
+
+    return matchesName && matchesPrice;
+  });
+
+  const foodPageSize = 12;
+  const totalFoodPages = Math.max(
+    1,
+    Math.ceil(filteredMenu.length / foodPageSize)
+  );
+  const safeFoodPage = Math.min(foodPage, totalFoodPages);
+  const paginatedMenu = filteredMenu.slice(
+    (safeFoodPage - 1) * foodPageSize,
+    safeFoodPage * foodPageSize
+  );
+
   if (authToken && userRole === "restaurant_owner") {
+    if (location.pathname !== "/owner") {
+      return <Navigate to="/owner" replace />;
+    }
     return <OwnerDashboard onLogout={handleLogout} />;
   }
 
   if (authToken && userRole === "delivery_partner") {
+    if (location.pathname !== "/delivery") {
+      return <Navigate to="/delivery" replace />;
+    }
     return <DeliveryDashboard onLogout={handleLogout} />;
+  }
+
+  if (location.pathname !== "/" && location.pathname !== "/orders") {
+    return <Navigate to="/" replace />;
   }
 
   return (
@@ -146,12 +184,69 @@ function App() {
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        <div className="menu-grid">
-          {menu
-            .filter((item) =>
-              item.name.toLowerCase().includes(search.toLowerCase())
-            )
-            .map((item) => (
+
+          <div style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 12,
+            marginBottom: 16
+          }}>
+            <input
+              type="search"
+              placeholder="Search food by name"
+              value={foodSearch}
+              onChange={(e) => {
+                setFoodSearch(e.target.value);
+                setFoodPage(1);
+              }}
+              style={{ padding: 12 }}
+            />
+
+            <select
+              value={maxFoodPrice}
+              onChange={(e) => {
+                setMaxFoodPrice(e.target.value);
+                setFoodPage(1);
+              }}
+              style={{ padding: 12 }}
+            >
+              <option value="">All prices</option>
+              <option value="50">Up to ₹50</option>
+              <option value="100">Up to ₹100</option>
+              <option value="200">Up to ₹200</option>
+              <option value="500">Up to ₹500</option>
+            </select>
+          </div>
+
+          <p>{filteredMenu.length} matching food items</p>
+
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            marginBottom: 16
+          }}>
+            <button
+              disabled={safeFoodPage <= 1}
+              onClick={() => setFoodPage(safeFoodPage - 1)}
+            >
+              Previous
+            </button>
+
+            <span>
+              Page {safeFoodPage} of {totalFoodPages}
+            </span>
+
+            <button
+              disabled={safeFoodPage >= totalFoodPages}
+              onClick={() => setFoodPage(safeFoodPage + 1)}
+            >
+              Next
+            </button>
+          </div>
+
+<div className="menu-grid">
+          {paginatedMenu.map((item) => (
             <article className="food-card" key={item.id}>
               <div className="food-icon"><img
   src={foodImages[item.name] || "/food-images/placeholder.svg"}

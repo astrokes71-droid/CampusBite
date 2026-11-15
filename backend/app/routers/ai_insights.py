@@ -1,3 +1,5 @@
+import certifi
+import ssl
 import json
 import os
 import time
@@ -125,7 +127,7 @@ def order_insights(
     )
 
     try:
-        with urlopen(request, timeout=25) as response:
+        with urlopen(request, timeout=25, context=ssl.create_default_context(cafile=certifi.where())) as response:
             result = json.load(response)
 
         answer = result["choices"][0]["message"]["content"]

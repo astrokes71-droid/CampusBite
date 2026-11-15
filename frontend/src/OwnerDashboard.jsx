@@ -1,3 +1,4 @@
+import React from "react";
 import { useEffect, useState } from "react";
 import api from "./api";
 
@@ -243,6 +244,7 @@ export default function OwnerDashboard({ onLogout }) {
 
       {orders.length === 0 && <p>No orders available.</p>}
 
+      <OwnerStatistics orders={orders} />
       {orders.map(order => (
         <article key={order.order_id} style={{
           background: "#fff",
@@ -349,5 +351,53 @@ export default function OwnerDashboard({ onLogout }) {
         </div>
       ))}
     </main>
+  );
+}
+
+
+function OwnerStatistics({ orders }) {
+  const [statusFilter, setStatusFilter] = React.useState("ALL");
+  const [dateFilter, setDateFilter] = React.useState("");
+
+  const filtered = orders.filter(order => {
+    const statusMatches =
+      statusFilter === "ALL" || order.status === statusFilter;
+    const dateMatches =
+      !dateFilter || String(order.created_at || "").slice(0, 10) === dateFilter;
+    return statusMatches && dateMatches;
+  });
+
+  const revenue = orders
+    .filter(order => ["DELIVERED"].includes(order.status))
+    .reduce((sum, order) => sum + Number(order.total_amount || 0), 0);
+
+  return (
+    <section className="campusbite-owner-stats"
+      style={{background:"#fff",padding:20,borderRadius:12,margin:"20px 0",color:"#222"}}>
+      <h2 style={{color:"#222"}}>Restaurant Statistics</h2>
+      <p>Total orders: {orders.length}</p>
+      <p>Delivered orders: {orders.filter(o => o.status === "DELIVERED").length}</p>
+      <p>Cancelled orders: {orders.filter(o => o.status === "CANCELLED").length}</p>
+      <p>Refunded orders: {orders.filter(o => o.status === "REFUNDED").length}</p>
+      <p>Delivered order value: ₹{revenue.toFixed(2)}</p>
+
+      <h3 style={{color:"#222"}}>Filter Orders</h3>
+      <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
+        {["ALL","PLACED","ACCEPTED","PREPARING","READY","ASSIGNED",
+          "OUT_FOR_DELIVERY","DELIVERED","CANCELLED","REFUNDED"]
+          .map(status => <option key={status} value={status}>{status}</option>)}
+      </select>
+      <input type="date" value={dateFilter}
+        onChange={e => setDateFilter(e.target.value)}
+        style={{marginLeft:10}} />
+      <p>Matching orders: {filtered.length}</p>
+      <ul>
+        {filtered.map(o => (
+          <li key={o.id || o.order_id}>
+            Order #{o.id || o.order_id} — {o.status} — ₹{o.total_amount}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

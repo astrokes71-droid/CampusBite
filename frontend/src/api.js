@@ -8,7 +8,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem("campusbite_token");
+  const token = localStorage.getItem("campusbite_token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
