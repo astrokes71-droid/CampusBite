@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 
 export default function OrderHistory({ authToken, onClose }) {
+  const [historyStatus, setHistoryStatus] = useState("ALL");
+  const [historyDate, setHistoryDate] = useState("");
+
   const [orders, setOrders] = useState([]);
   const [menuNames, setMenuNames] = useState({});
   const [loading, setLoading] = useState(true);
@@ -163,7 +166,48 @@ export default function OrderHistory({ authToken, onClose }) {
         <p>You haven't placed any orders yet.</p>
       )}
 
-      {!loading && !error && orders.map(order => (
+      {/* campusbite-customer-history-filters */}
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "16px 0" }}>
+          <label>
+            Status:{" "}
+            <select
+              value={historyStatus}
+              onChange={(e) => setHistoryStatus(e.target.value)}
+            >
+              {["ALL", "PLACED", "ACCEPTED", "PREPARING", "READY",
+                "ASSIGNED", "OUT_FOR_DELIVERY", "DELIVERED",
+                "CANCELLED", "REFUNDED"].map(status => (
+                <option key={status} value={status}>{status}</option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Date:{" "}
+            <input
+              type="date"
+              value={historyDate}
+              onChange={(e) => setHistoryDate(e.target.value)}
+            />
+          </label>
+
+          <button
+            type="button"
+            onClick={() => {
+              setHistoryStatus("ALL");
+              setHistoryDate("");
+            }}
+          >
+            Clear Filters
+          </button>
+        </div>
+
+        {!loading && !error && orders
+          .filter(order =>
+            (historyStatus === "ALL" || order.status === historyStatus) &&
+            (!historyDate || String(order.created_at || "").slice(0, 10) === historyDate)
+          )
+          .map(order => (
         <article
           key={order.order_id}
           style={{
