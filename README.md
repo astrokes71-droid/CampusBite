@@ -1,159 +1,105 @@
 # CampusBite
 
-### Campus Food Ordering Web Application
-
-CampusBite is a full-stack web application designed to help students browse campus food menus, manage shopping carts, place demo orders, and review their order history.
+A full-stack food ordering and restaurant management application developed for the Masai School E&ICT IIT Roorkee Software Engineering with AI program.
 
 ## Technology Stack
 
-**Frontend**
-- React
-- Vite
-- JavaScript
-- CSS
+- Frontend: React, Vite, JavaScript, Axios
+- Backend: Python, FastAPI, SQLAlchemy
+- Database: PostgreSQL
+- Authentication: JWT
+- Deployment: Docker and Docker Compose
+- AI Integration: OpenAI API (requires a configured API key)
 
-**Backend**
-- Python
-- FastAPI
-- SQLAlchemy
-- JWT Authentication
+## Features
 
-**Database**
-- PostgreSQL
-- Psycopg
+### Customer
+- Account registration and login
+- Browse restaurant menus
+- Add food items to cart
+- Place orders using dummy checkout
+- View order history
+- Cancel eligible orders
+- Review delivered orders
+- Request refunds
+- Ask AI questions about previous orders
 
-**Development Tools**
-- Git and GitHub
-- Docker and Docker Compose
+### Restaurant Owner
+- View restaurant orders
+- Update order preparation status
+- Manage dish availability
+- Create and edit menu items
+- Assign delivery partners
+- Review and decide refund requests
+- View delayed-order reminders
 
-## Implemented Features
+### Delivery Partner
+- View assigned orders
+- Update delivery status
+- Complete deliveries
 
-- User registration and login
-- JWT-based authentication
-- Role-based authentication endpoints
-- Restaurant and food menu APIs
-- Food images and menu prices
-- Shopping cart management
-- Item quantity selection
-- Total price calculation
-- Demo checkout
-- Order storage in PostgreSQL
-- Authenticated order history
-- Order details including food names, quantities, prices and statuses
-- Backend health-check endpoint
+## Order Lifecycle
 
-## Project Structure
+PLACED -> ACCEPTED -> PREPARING -> READY -> ASSIGNED -> OUT_FOR_DELIVERY -> DELIVERED
 
-    CampusBite/
-    ├── backend/
-    │   ├── app/
-    │   ├── Dockerfile
-    │   └── requirements.txt
-    ├── frontend/
-    │   ├── src/
-    │   └── package.json
-    ├── docker-compose.yml
-    ├── .env.example
-    └── README.md
+Other supported states include CANCELLED and REFUNDED.
 
-## Local Installation
+## Running Locally
 
 ### Backend
 
-Install Python and PostgreSQL.
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python -m uvicorn app.main:app --reload --port 8000
+```
 
-    cd backend
-    python3 -m venv .venv
-    source .venv/bin/activate
-    pip install -r requirements.txt
+Backend documentation:
+http://localhost:8000/docs
 
-Create backend/.env using backend/.env.example.
-
-Configure DATABASE_URL and JWT_SECRET_KEY.
-
-Ensure the PostgreSQL database has the required tables and initial menu data.
-
-Start the backend:
-
-    python -m uvicorn app.main:app --reload --port 8000
-
-Backend URL:
-
-http://127.0.0.1:8000
-
-API documentation:
-
-http://127.0.0.1:8000/docs
+The backend requires a configured PostgreSQL database and environment variables.
 
 ### Frontend
 
-    cd frontend
-    npm install
-    npm run dev
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
 Open the local URL displayed by Vite.
 
-## Main API Endpoints
+### Docker
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| GET | /health | Backend health |
-| POST | /auth/register | User registration |
-| POST | /auth/login | User login |
-| GET | /auth/me | Current user |
-| POST | /orders/demo-checkout | Demo order checkout |
-| GET | /orders/history | Authenticated order history |
-| POST | /payments/create-order | Payment order creation |
+Create a root `.env` file with the required environment variables, including `POSTGRES_PASSWORD` and `JWT_SECRET_KEY`.
 
-Additional restaurant and menu endpoints are available in the FastAPI documentation.
+```bash
+docker compose up -d --build
+docker compose ps
+```
 
-## Payment Information
-
-CampusBite includes a demo checkout workflow that saves orders to PostgreSQL.
-
-A Razorpay payment-order API is also present. Successful live payment processing and verification are not claimed as completed features.
-
-## Docker
-
-Docker configuration files are included for the FastAPI backend and PostgreSQL.
-
-The containerized setup requires environment configuration, database initialization, and integration testing before it can be considered verified.
+The Docker backend is exposed on port 8001 in the current configuration.
 
 ## Security
 
 - JWT-based authentication
-- Environment variables for credentials
-- Private .env files excluded from Git
-- Development backups excluded from Git
+- Role-based backend authorization
+- Environment variables for secrets
+- Password hashing
+- No real payment processing is required for dummy checkout
 
-Do not commit real database passwords, JWT secrets or payment API credentials.
+## AI Configuration
 
-## Testing
+Set `OPENAI_API_KEY` in the backend environment to enable AI order insights.
 
-Frontend production build:
-
-    cd frontend
-    npm run build
-
-Backend API documentation:
-
-http://127.0.0.1:8000/docs
-
-## Future Improvements
-
-- Complete payment verification
-- Restaurant management dashboard
-- Delivery tracking
-- Admin dashboard
-- Production deployment
-- Automated testing
-
-## Academic Project
-
-Developed as part of the Software Engineering with AI learning program associated with Masai School and E&ICT Academy, IIT Roorkee.
+AI requests require an available OpenAI API account and appropriate API credits.
 
 ## Project Status
 
-Core application workflow implemented and locally tested.
+Core customer, owner, and delivery features have been implemented. Final workflow, deployment, and requirement-compliance testing is ongoing.
 
-Docker deployment and production hosting require further verification.
+## Repository
+
+https://github.com/astrokes71-droid/CampusBite
