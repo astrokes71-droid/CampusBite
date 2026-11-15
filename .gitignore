@@ -1,0 +1,101 @@
+# Secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+*.pem
+*.key
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# JavaScript
+node_modules/
+dist/
+build/
+coverage/
+
+# Database and backups
+backups/
+*.dump
+*.sql
+*.sqlite3
+*.backup
+*.before_*
+*.before-*
+*.bak
+
+# Local files
+.DS_Store
+.vscode/
+.idea/
+*.log
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node.js and Vite
+node_modules/
+dist/
+.vite/
+
+# Backups
+backups/
+*.backup*
+*.before-*
+*.bak
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# macOS
+.DS_Store
+
+# Development backup files
+*.backup
+*.backup-*
+*.before_*
+*.before-*
+*.broken-*
+*.safe-*
+*.WORKING_BACKUP
+
+# Python caches
+__pycache__/
+*.pyc
+
+# Build and temporary files
+node_modules/
+dist/
+*.log
+
+# Additional development backups
+*_backup.py
+*.cors_backup
+*_backup.*
+*.backup_*
+
+# Additional backup files
+*_backup.py
+*.cors_backup
+*.backup_*
