@@ -99,3 +99,5 @@ dist/
 *_backup.py
 *.cors_backup
 *.backup_*
+
+*.step*_backup

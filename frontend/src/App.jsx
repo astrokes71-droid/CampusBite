@@ -1,3 +1,4 @@
+import AIInsights from "./AIInsights";
 import OwnerDashboard from "./OwnerDashboard";
 import DeliveryDashboard from "./DeliveryDashboard";
 import OrderHistory from "./OrderHistory";
@@ -261,6 +262,7 @@ function App() {
             </>
           )}
         </section>
+      {authToken && showOrders && <AIInsights />}
       {authToken && showOrders && (
   <OrderHistory
     authToken={authToken}

@@ -74,6 +74,72 @@ export default function OrderHistory({ authToken, onClose }) {
     return () => controller.abort();
   }, [authToken]);
 
+
+  const [busyOrder, setBusyOrder] = useState(null);
+  const [notice, setNotice] = useState("");
+
+  async function orderAction(order, action) {
+    const orderId = order.order_id;
+    let url = "";
+    let method = "POST";
+    let body;
+
+    if (action === "cancel") {
+      if (!window.confirm(`Cancel order #${orderId}?`)) return;
+      url = `/orders/${orderId}/cancel`;
+      method = "PATCH";
+    } else if (action === "review") {
+      const rating = Number(window.prompt("Rate your order from 1 to 5:"));
+      if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+        setNotice("Please enter a rating between 1 and 5.");
+        return;
+      }
+      const comment = window.prompt("Review comment (optional):") || "";
+      url = `/orders/${orderId}/review`;
+      body = { rating, comment };
+    } else if (action === "refund") {
+      const reason = window.prompt("Why are you requesting a refund?");
+      if (reason === null) return;
+      if (reason.trim().length < 5) {
+        setNotice("Please enter at least 5 characters.");
+        return;
+      }
+      url = `/refunds/orders/${orderId}/request`;
+      body = { reason: reason.trim() };
+    }
+
+    setBusyOrder(orderId);
+    setNotice("");
+
+    try {
+      const response = await fetch(`http://127.0.0.1:8000${url}`, {
+        method,
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          ...(body ? { "Content-Type": "application/json" } : {})
+        },
+        ...(body ? { body: JSON.stringify(body) } : {})
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(typeof data.detail === "string"
+          ? data.detail : `Request failed (${response.status})`);
+      }
+
+      setNotice(`Order #${orderId}: ${action} successful.`);
+
+      const updated = await fetch("http://127.0.0.1:8000/orders/history", {
+        headers: { Authorization: `Bearer ${authToken}` }
+      });
+      if (updated.ok) setOrders(await updated.json());
+    } catch (error) {
+      setNotice(error.message);
+    } finally {
+      setBusyOrder(null);
+    }
+  }
+
   return (
     <section style={{
       padding: "24px",
@@ -89,6 +155,7 @@ export default function OrderHistory({ authToken, onClose }) {
         <button onClick={onClose}>Close</button>
       </div>
 
+      {notice && <p role="status">{notice}</p>}
       {loading && <p>Loading your orders...</p>}
       {error && <p role="alert">Error: {error}</p>}
 
@@ -125,6 +192,27 @@ export default function OrderHistory({ authToken, onClose }) {
               </li>
             ))}
           </ul>
+
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {order.status === "PLACED" && (
+              <button disabled={busyOrder === order.order_id}
+                onClick={() => orderAction(order, "cancel")}>
+                Cancel Order
+              </button>
+            )}
+            {order.status === "DELIVERED" && (
+              <>
+                <button disabled={busyOrder === order.order_id}
+                  onClick={() => orderAction(order, "review")}>
+                  Write Review
+                </button>
+                <button disabled={busyOrder === order.order_id}
+                  onClick={() => orderAction(order, "refund")}>
+                  Request Refund
+                </button>
+              </>
+            )}
+          </div>
         </article>
       ))}
     </section>

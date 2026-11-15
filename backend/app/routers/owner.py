@@ -204,3 +204,94 @@ def assign_delivery_partner(
         "delivery_partner_id": partner.id,
         "status": "ASSIGNED",
     }
+
+
+from decimal import Decimal
+from pydantic import Field
+
+
+class DishCreate(BaseModel):
+    name: str = Field(min_length=2, max_length=150)
+    price: Decimal = Field(gt=0, max_digits=10, decimal_places=2)
+    available: bool = True
+
+
+class DishUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=2, max_length=150)
+    price: Decimal | None = Field(
+        default=None, gt=0, max_digits=10, decimal_places=2
+    )
+    available: bool | None = None
+
+
+@router.post("/restaurants/{restaurant_id}/menu", status_code=201)
+def create_dish(
+    restaurant_id: int,
+    payload: DishCreate,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_role("restaurant_owner")),
+):
+    owned_restaurant(db, user, restaurant_id)
+
+    dish = MenuItem(
+        restaurant_id=restaurant_id,
+        name=payload.name.strip(),
+        price=payload.price,
+        available=payload.available,
+    )
+
+    db.add(dish)
+    db.commit()
+    db.refresh(dish)
+
+    return {
+        "id": dish.id,
+        "name": dish.name,
+        "price": float(dish.price),
+        "available": dish.available,
+    }
+
+
+@router.patch("/menu/{item_id}")
+def update_dish(
+    item_id: int,
+    payload: DishUpdate,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_role("restaurant_owner")),
+):
+    dish = db.get(MenuItem, item_id)
+
+    if dish is None:
+        raise HTTPException(404, "Dish not found")
+
+    owned_restaurant(db, user, dish.restaurant_id)
+
+    changes = payload.model_dump(exclude_unset=True)
+
+    if not changes:
+        raise HTTPException(400, "No changes supplied")
+
+    if "name" in changes:
+        if changes["name"] is None or not changes["name"].strip():
+            raise HTTPException(422, "Invalid dish name")
+        dish.name = changes["name"].strip()
+
+    if "price" in changes:
+        if changes["price"] is None:
+            raise HTTPException(422, "Invalid dish price")
+        dish.price = changes["price"]
+
+    if "available" in changes:
+        if changes["available"] is None:
+            raise HTTPException(422, "Invalid availability")
+        dish.available = changes["available"]
+
+    db.commit()
+    db.refresh(dish)
+
+    return {
+        "id": dish.id,
+        "name": dish.name,
+        "price": float(dish.price),
+        "available": dish.available,
+    }
