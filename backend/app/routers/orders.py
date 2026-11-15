@@ -116,7 +116,7 @@ def demo_checkout(
 @router.get("/history")
 def get_order_history(
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_role("customer")),
 ):
     orders = (
         db.query(Order)
