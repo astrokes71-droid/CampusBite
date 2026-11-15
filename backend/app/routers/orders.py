@@ -39,6 +39,7 @@ def demo_checkout(
 
         order_lines = []
         total = Decimal("0.00")
+        restaurant_ids = set()
 
         for item_id, quantity in quantities.items():
             food = db.get(MenuItem, item_id)
@@ -48,14 +49,22 @@ def demo_checkout(
                     400, f"Menu item {item_id} is unavailable"
                 )
 
+            restaurant_ids.add(food.restaurant_id)
             price = Decimal(str(food.price))
             total += price * quantity
             order_lines.append((item_id, quantity, price))
 
+        if len(restaurant_ids) != 1:
+            raise HTTPException(
+                400,
+                "Please order from one restaurant at a time"
+            )
+
         order = Order(
             user_id=user.id,
+            restaurant_id=next(iter(restaurant_ids)),
             total_amount=total,
-            status="demo_paid",
+            status="PLACED",
         )
         db.add(order)
         db.flush()

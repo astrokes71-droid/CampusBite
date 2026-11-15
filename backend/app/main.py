@@ -1,3 +1,6 @@
+from app.routers import delivery
+from app.routers import owner
+from app.routers import order_management
 from app.routers import orders
 from app.routers.payments import router as payments_router
 from app.routers.auth import router as auth_router
@@ -47,3 +50,9 @@ app.include_router(auth_router)
 app.include_router(payments_router)
 
 app.include_router(orders.router)
+
+# Temporary order-management router disabled pending authorization
+
+app.include_router(owner.router)
+
+app.include_router(delivery.router)

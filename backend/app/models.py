@@ -27,6 +27,10 @@ class Restaurant(Base):
     name: Mapped[str] = mapped_column(String(150))
     description: Mapped[str | None] = mapped_column(String(500))
 
+    owner_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )
+
     menu_items: Mapped[list["MenuItem"]] = relationship(
         back_populates="restaurant"
     )
@@ -53,6 +57,13 @@ class Order(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    restaurant_id: Mapped[int | None] = mapped_column(
+        ForeignKey("restaurants.id"), nullable=True
+    )
+    delivery_partner_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )
+
     total_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     status: Mapped[str] = mapped_column(
         String(30), default="pending"
@@ -146,6 +157,28 @@ class AdminReminderLog(Base):
     )
     message: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc)
+    )
+
+
+class OrderStatusHistory(Base):
+    __tablename__ = "order_status_history"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    order_id: Mapped[int] = mapped_column(
+        ForeignKey("orders.id"), nullable=False
+    )
+    changed_by: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )
+    old_status: Mapped[str | None] = mapped_column(
+        String(30), nullable=True
+    )
+    new_status: Mapped[str] = mapped_column(
+        String(30), nullable=False
+    )
+    changed_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc)
     )

@@ -1,3 +1,5 @@
+import OwnerDashboard from "./OwnerDashboard";
+import DeliveryDashboard from "./DeliveryDashboard";
 import OrderHistory from "./OrderHistory";
 import Auth from "./Auth";
 import foodImages from "./foodImages.json";
@@ -7,11 +9,18 @@ import "./App.css";
 const API_URL = "http://127.0.0.1:8000";
 
 function App() {
-  const [authToken, setAuthToken] = useState(null);
+  const [authToken, setAuthToken] = useState(
+    () => sessionStorage.getItem("campusbite_token")
+  );
+  const [userRole, setUserRole] = useState(
+    () => sessionStorage.getItem("campusbite_role") || "customer"
+  );
   const [showOrders, setShowOrders] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
 
-  const handleLogin = (token) => {
+  const handleLogin = (token, role = 'customer') => {
+    setUserRole(role);
+    sessionStorage.setItem('campusbite_role', role);
     setAuthToken(token);
     sessionStorage.setItem("campusbite_token", token);
     setShowAuth(false);
@@ -20,6 +29,8 @@ function App() {
   const handleLogout = () => {
     setAuthToken(null);
     sessionStorage.removeItem("campusbite_token");
+    sessionStorage.removeItem("campusbite_role");
+    setUserRole("customer");
     setShowAuth(false);
   };
 
@@ -62,6 +73,14 @@ function App() {
     (sum, item) => sum + item.price * (cart[item.id] || 0),
     0
   );
+
+  if (authToken && userRole === "restaurant_owner") {
+    return <OwnerDashboard onLogout={handleLogout} />;
+  }
+
+  if (authToken && userRole === "delivery_partner") {
+    return <DeliveryDashboard onLogout={handleLogout} />;
+  }
 
   return (
     <div className="app">

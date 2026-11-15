@@ -30,7 +30,7 @@ export default function Auth({ onLogin }) {
           password
         });
 
-        onLogin(response.data.access_token);
+        onLogin(response.data.access_token, response.data.role);
       }
     } catch (error) {
       setMessage(
